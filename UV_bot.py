@@ -32,7 +32,7 @@ def init_db():
     conn.close()
 
 async def store_user_preference(user_id, location, location_name, uv_threshold):
-    conn = sqlite3.connect('user_preferences.db')
+    conn = sqlite3.connect('/app/data/user_preferences.db')
     c = conn.cursor()
     c.execute('''INSERT OR REPLACE INTO user_preferences 
                  (user_id, location, location_name, uv_threshold)
@@ -42,7 +42,7 @@ async def store_user_preference(user_id, location, location_name, uv_threshold):
     conn.close()
 
 async def get_user_preference(user_id):
-    conn = sqlite3.connect('user_preferences.db')
+    conn = sqlite3.connect('/app/data/user_preferences.db')
     c = conn.cursor()
     c.execute('SELECT location, location_name, uv_threshold FROM user_preferences WHERE user_id = ?', (user_id,))
     result = c.fetchone()
@@ -216,7 +216,7 @@ async def mylocation(ctx):
 
 @tasks.loop(hours=24)
 async def daily_notification():
-    conn = sqlite3.connect('user_preferences.db')
+    conn = sqlite3.connect('/app/data/user_preferences.db')
     c = conn.cursor()
     c.execute('SELECT user_id, location, location_name, uv_threshold FROM user_preferences')
     users = c.fetchall()
