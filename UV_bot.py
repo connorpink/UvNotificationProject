@@ -94,7 +94,6 @@ async def on_ready():
     logging.info(f'Bot logged in as {bot.user}')
     init_db()
     daily_notification.start()
-    scheduler_test.start()
     logging.info('Started daily notification and scheduler test loops')
 
 @bot.command(name='uv')
