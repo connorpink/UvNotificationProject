@@ -20,7 +20,7 @@ intents.message_content = True
 bot = commands.Bot(command_prefix='$', intents=intents)
 
 def init_db():
-    conn = sqlite3.connect('user_preferences.db')
+    conn = sqlite3.connect('/app/data/user_preferences.db')
     c = conn.cursor()
     c.execute('''CREATE TABLE IF NOT EXISTS user_preferences
                  (user_id INTEGER PRIMARY KEY,

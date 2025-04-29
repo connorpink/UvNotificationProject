@@ -4,8 +4,11 @@ services:
   uvbot:
     build: .
     volumes:
-      - ./user_preferences.db:/app/user_preferences.db
+      - uv_data:/app/data
     environment:
       - TOKEN=${DISCORD_TOKEN}
       - WEATHER_API_KEY=${WEATHER_API_KEY}
     restart: unless-stopped
+
+volumes:
+  uv_data:
