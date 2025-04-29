@@ -5,6 +5,13 @@ import os
 from datetime import datetime
 import sqlite3
 import asyncio
+import logging
+
+# Add logging configuration near the top of the file after imports
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(levelname)s - %(message)s'
+)
 
 # Remove any dotenv loading since we're using Docker environment variables directly
 WEATHER_API_KEY = os.getenv('WEATHER_API_KEY')
@@ -84,9 +91,11 @@ async def get_uv_index(location):
 
 @bot.event
 async def on_ready():
-    print(f'We have logged in as {bot.user}')
+    logging.info(f'Bot logged in as {bot.user}')
     init_db()
     daily_notification.start()
+    scheduler_test.start()
+    logging.info('Started daily notification and scheduler test loops')
 
 @bot.command(name='uv')
 async def uv(ctx, *, location_query=None):
@@ -216,24 +225,28 @@ async def mylocation(ctx):
 
 @tasks.loop(hours=24)
 async def daily_notification():
+    logging.info("Starting daily UV notification check")
     conn = sqlite3.connect('/app/data/user_preferences.db')
     c = conn.cursor()
     c.execute('SELECT user_id, location, location_name, uv_threshold FROM user_preferences')
     users = c.fetchall()
     conn.close()
 
+    logging.info(f"Found {len(users)} users to check")
     for user_id, location, location_name, uv_threshold in users:
         uv_index, _ = await get_uv_index(location)
         if uv_index is not None:
             risk_level = "Low" if uv_index <= 2 else "Moderate" if uv_index <= 5 else "High" if uv_index <= 7 else "Very High" if uv_index <= 10 else "Extreme"
+            logging.info(f"User {user_id} - Location: {location_name} - UV Index: {uv_index:.1f} - Threshold: {uv_threshold}")
             
             # Only notify if UV index exceeds user's threshold
             if uv_index > uv_threshold:
                 user = await bot.fetch_user(user_id)
                 try:
                     await user.send(f"⚠️ UV Alert! Current UV Index for {location_name}: {uv_index:.1f} ({risk_level})")
+                    logging.info(f"Successfully sent notification to user {user_id}")
                 except discord.Forbidden:
-                    print(f"Cannot send DM to user {user_id}")
+                    logging.error(f"Cannot send DM to user {user_id}")
 
 @daily_notification.before_loop
 async def before_daily_notification():
@@ -244,6 +257,11 @@ async def before_daily_notification():
     if now >= target_time:
         target_time = target_time.replace(day=target_time.day + 1)
     seconds_until_target = (target_time - now).total_seconds()
+    logging.info(f"Daily notification will start in {seconds_until_target:.1f} seconds (at {target_time})")
     await asyncio.sleep(seconds_until_target)
+
+@scheduler_test.before_loop
+async def before_scheduler_test():
+    await bot.wait_until_ready()
 
 bot.run(TOKEN)
