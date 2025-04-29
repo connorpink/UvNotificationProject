@@ -1,0 +1,11 @@
+version: '3.8'
+
+services:
+  uvbot:
+    build: .
+    volumes:
+      - ./user_preferences.db:/app/user_preferences.db
+    environment:
+      - TOKEN=${DISCORD_TOKEN}
+      - WEATHER_API_KEY=${WEATHER_API_KEY}
+    restart: unless-stopped

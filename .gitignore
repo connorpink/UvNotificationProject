@@ -8,3 +8,7 @@ dist/
 build/
 # OS files
 .DS_Store
+# Database files
+*.db
+# Python cache
+__pycache__/
