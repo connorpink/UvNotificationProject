@@ -260,8 +260,5 @@ async def before_daily_notification():
     logging.info(f"Daily notification will start in {seconds_until_target:.1f} seconds (at {target_time})")
     await asyncio.sleep(seconds_until_target)
 
-@scheduler_test.before_loop
-async def before_scheduler_test():
-    await bot.wait_until_ready()
 
 bot.run(TOKEN)
